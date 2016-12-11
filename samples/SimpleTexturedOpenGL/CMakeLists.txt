@@ -30,7 +30,7 @@ ADD_EXECUTABLE( assimp_simpletexturedogl WIN32
   SimpleTexturedOpenGL/src/model_loading.cpp
 )
 
-SET_PROPERTY(TARGET assimp_simpletexturedogl PROPERTY DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+#SET_PROPERTY(TARGET assimp_simpletexturedogl PROPERTY DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
 TARGET_LINK_LIBRARIES( assimp_simpletexturedogl assimp ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} DevIL.lib )
 
