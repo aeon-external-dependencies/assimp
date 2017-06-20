@@ -855,7 +855,7 @@ ENDIF (ASSIMP_BUILD_NONFREE_C4D_IMPORTER)
 
 ADD_LIBRARY( assimp ${assimp_src} )
 set_target_properties(assimp PROPERTIES FOLDER "External/assimp")
-TARGET_LINK_LIBRARIES(assimp zlibstatic ${OPENDDL_PARSER_LIBRARIES} )
+TARGET_LINK_LIBRARIES(assimp zlibstatic IrrXML ${OPENDDL_PARSER_LIBRARIES} )
 
 target_include_directories(assimp
     PUBLIC ${CMAKE_BINARY_DIR}/dep

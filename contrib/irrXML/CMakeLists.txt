@@ -12,3 +12,7 @@ add_library(IrrXML STATIC ${IrrXML_SRCS})
 set(IRRXML_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "IrrXML_Include" )
 set(IRRXML_LIBRARY "IrrXML" CACHE INTERNAL "IrrXML" )
 set_target_properties(IrrXML PROPERTIES FOLDER "External/assimp")
+
+target_include_directories(IrrXML
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/../../../
+)
