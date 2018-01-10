@@ -97,6 +97,7 @@ OPTION ( BUILD_DOCS
 
 if (WIN32)
     add_definitions( -DWIN32_LEAN_AND_MEAN )
+    add_definitions( -D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING )
 endif()
 
 IF(MSVC)

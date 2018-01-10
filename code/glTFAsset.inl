@@ -1297,8 +1297,8 @@ inline void Asset::ReadBinaryHeader(IOStream& stream)
 inline void Asset::Load(const std::string& pFile, bool isBinary)
 {
     mCurrentAssetDir.clear();
-    int pos = std::max(int(pFile.rfind('/')), int(pFile.rfind('\\')));
-    if (pos != int(std::string::npos)) mCurrentAssetDir = pFile.substr(0, pos + 1);
+    const auto pos = std::max(int(pFile.rfind('/')), int(pFile.rfind('\\')));
+    if (pos != std::string::npos) mCurrentAssetDir = pFile.substr(0, pos + 1);
 
     shared_ptr<IOStream> stream(OpenFile(pFile.c_str(), "rb", true));
     if (!stream) {
