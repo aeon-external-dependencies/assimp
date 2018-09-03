@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -142,14 +143,14 @@ struct Frame
     //! name of frame
     char name[ AI_MD3_MAXFRAME ];
 
-} PACK_STRUCT;
+} /* PACK_STRUCT */;
 
 
 // -------------------------------------------------------------------------------
-/** @brief Data structure for the tag header
+/**
+ * @brief Data structure for the tag header
  */
-struct Tag
-{
+struct Tag {
     //! name of the tag
     char NAME[ AI_MD3_MAXQPATH ];
 
@@ -157,14 +158,13 @@ struct Tag
     aiVector3D  origin;
     ai_real  orientation[3][3];
 
-} PACK_STRUCT;
+} /* PACK_STRUCT */;
 
 
 // -------------------------------------------------------------------------------
 /** @brief Data structure for the surface header
  */
-struct Surface
-{
+struct Surface {
     //! magic number
     int32_t IDENT;
 
@@ -186,7 +186,6 @@ struct Surface
     //! number of triangles in the surface
     uint32_t NUM_TRIANGLES;
 
-
     //! offset to the triangle data
     uint32_t OFS_TRIANGLES;
 
@@ -201,19 +200,18 @@ struct Surface
 
     //! offset to the end of the Surface object
     int32_t OFS_END;
-} PACK_STRUCT;
+} /*PACK_STRUCT*/;
 
 // -------------------------------------------------------------------------------
 /** @brief Data structure for a shader defined in there
  */
-struct Shader
-{
+struct Shader {
     //! filename of the shader
     char NAME[ AI_MD3_MAXQPATH ];
 
     //! index of the shader
     uint32_t SHADER_INDEX;
-} PACK_STRUCT;
+} /*PACK_STRUCT*/;
 
 
 // -------------------------------------------------------------------------------
@@ -223,7 +221,7 @@ struct Triangle
 {
     //! triangle indices
     uint32_t INDEXES[3];
-} PACK_STRUCT;
+} /*PACK_STRUCT*/;
 
 
 // -------------------------------------------------------------------------------
@@ -233,7 +231,7 @@ struct TexCoord
 {
     //! UV coordinates
     ai_real U,V;
-} PACK_STRUCT;
+} /*PACK_STRUCT*/;
 
 
 // -------------------------------------------------------------------------------
@@ -246,7 +244,7 @@ struct Vertex
 
     //! encoded normal vector
     uint16_t  NORMAL;
-} PACK_STRUCT;
+} /*PACK_STRUCT*/;
 
 #include "./../include/assimp/Compiler/poppack1.h"
 

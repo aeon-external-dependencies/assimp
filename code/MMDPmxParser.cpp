@@ -2,7 +2,8 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2017, assimp team
+Copyright (c) 2006-2018, assimp team
+
 
 All rights reserved.
 
@@ -40,12 +41,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #include <utility>
 #include "MMDPmxParser.h"
+#include <assimp/StringUtils.h>
 #include "../contrib/utf8cpp/source/utf8.h"
-#include "Exceptional.h"
+#include <assimp/Exceptional.h>
 
 namespace pmx
 {
-	/// インデックス値を読み込む
 	int ReadIndex(std::istream *stream, int size)
 	{
 		switch (size)
@@ -79,7 +80,6 @@ namespace pmx
 		}
 	}
 
-	/// 文字列を読み込む
 	std::string ReadString(std::istream *stream, uint8_t encoding)
 	{
 		int size;
@@ -119,7 +119,7 @@ namespace pmx
 		stream->read((char*) &count, sizeof(uint8_t));
 		if (count < 8)
 		{
-			throw;
+			throw DeadlyImportError("MMD: invalid size");
 		}
 		stream->read((char*) &encoding, sizeof(uint8_t));
 		stream->read((char*) &uv, sizeof(uint8_t));
@@ -218,8 +218,8 @@ namespace pmx
 
 	void PmxMaterial::Read(std::istream *stream, PmxSetting *setting)
 	{
-		this->material_name = std::move(ReadString(stream, setting->encoding));
-		this->material_english_name = std::move(ReadString(stream, setting->encoding));
+		this->material_name = ReadString(stream, setting->encoding);
+		this->material_english_name = ReadString(stream, setting->encoding);
 		stream->read((char*) this->diffuse, sizeof(float) * 4);
 		stream->read((char*) this->specular, sizeof(float) * 3);
 		stream->read((char*) &this->specularlity, sizeof(float));
@@ -238,7 +238,7 @@ namespace pmx
 		else {
 			this->toon_texture_index = ReadIndex(stream, setting->texture_index_size);
 		}
-		this->memo = std::move(ReadString(stream, setting->encoding));
+		this->memo = ReadString(stream, setting->encoding);
 		stream->read((char*) &this->index_count, sizeof(int));
 	}
 
@@ -255,8 +255,8 @@ namespace pmx
 
 	void PmxBone::Read(std::istream *stream, PmxSetting *setting)
 	{
-		this->bone_name = std::move(ReadString(stream, setting->encoding));
-		this->bone_english_name = std::move(ReadString(stream, setting->encoding));
+		this->bone_name = ReadString(stream, setting->encoding);
+		this->bone_english_name = ReadString(stream, setting->encoding);
 		stream->read((char*) this->position, sizeof(float) * 3);
 		this->parent_index = ReadIndex(stream, setting->bone_index_size);
 		stream->read((char*) &this->level, sizeof(int));
@@ -396,7 +396,7 @@ namespace pmx
 			}
 			break;
 		default:
-			throw;
+            throw DeadlyImportError("MMD: unknown morth type");
 		}
 	}
 
@@ -473,12 +473,12 @@ namespace pmx
 		stream->read((char*) &this->is_near, sizeof(uint8_t));
 	}
 
-	void PmxSoftBody::Read(std::istream *stream, PmxSetting *setting)
+    void PmxSoftBody::Read(std::istream * /*stream*/, PmxSetting * /*setting*/)
 	{
 		// 未実装
 		std::cerr << "Not Implemented Exception" << std::endl;
-		throw;
-	}
+        throw DeadlyImportError("MMD: Not Implemented Exception");
+    }
 
 	void PmxModel::Init()
 	{
@@ -517,23 +517,23 @@ namespace pmx
 		if (magic[0] != 0x50 || magic[1] != 0x4d || magic[2] != 0x58 || magic[3] != 0x20)
 		{
 			std::cerr << "invalid magic number." << std::endl;
-			throw;
-		}
+            throw DeadlyImportError("MMD: invalid magic number.");
+        }
 		// バージョン
 		stream->read((char*) &version, sizeof(float));
 		if (version != 2.0f && version != 2.1f)
 		{
 			std::cerr << "this is not ver2.0 or ver2.1 but " << version << "." << std::endl;
-			throw;
-		}
+            throw DeadlyImportError("MMD: this is not ver2.0 or ver2.1 but " + to_string(version));
+        }
 		// ファイル設定
 		this->setting.Read(stream);
 
 		// モデル情報
-		this->model_name = std::move(ReadString(stream, setting.encoding));
-		this->model_english_name = std::move(ReadString(stream, setting.encoding));
-		this->model_comment = std::move(ReadString(stream, setting.encoding));
-		this->model_english_comment = std::move(ReadString(stream, setting.encoding));
+		this->model_name = ReadString(stream, setting.encoding);
+		this->model_english_name = ReadString(stream, setting.encoding);
+		this->model_comment = ReadString(stream, setting.encoding);
+		this->model_english_comment = ReadString(stream, setting.encoding);
 
 		// 頂点
 		stream->read((char*) &vertex_count, sizeof(int));
@@ -606,35 +606,5 @@ namespace pmx
 		{
 			this->joints[i].Read(stream, &setting);
 		}
-
-		//// ソフトボディ
-		//if (this->version == 2.1f)
-		//{
-		//	stream->read((char*) &this->soft_body_count, sizeof(int));
-		//	this->soft_bodies = mmd::make_unique<PmxSoftBody []>(this->soft_body_count);
-		//	for (int i = 0; i < this->soft_body_count; i++)
-		//	{
-		//		this->soft_bodies[i].Read(stream, &setting);
-		//	}
-		//}
 	}
-
-	//std::unique_ptr<PmxModel> ReadFromFile(const char *filename)
-	//{
-	//	auto stream = std::ifstream(filename, std::ios_base::binary);
-	//	auto pmx = PmxModel::ReadFromStream(&stream);
-	//	if (!stream.eof())
-	//	{
-	//		std::cerr << "don't reach the end of file." << std::endl;
-	//	}
-	//	stream.close();
-	//	return pmx;
-	//}
-
-	//std::unique_ptr<PmxModel> ReadFromStream(std::istream *stream)
-	//{
-	//	auto pmx = mmd::make_unique<PmxModel>();
-	//	pmx->Read(stream);
-	//	return pmx;
-	//}
 }

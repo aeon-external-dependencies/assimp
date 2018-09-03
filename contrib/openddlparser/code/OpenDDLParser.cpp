@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <memory>
 #include <math.h>
 
 #ifdef _WIN32
@@ -99,7 +100,13 @@ static bool isUnsignedIntegerType( Value::ValueType integerType ) {
 }
 
 static DDLNode *createDDLNode( Text *id, OpenDDLParser *parser ) {
+    // Basic checks
     if( ddl_nullptr == id || ddl_nullptr == parser ) {
+        return ddl_nullptr;
+    }
+    
+    // If the buffer is empty ( an empty node ) return nullptr
+    if ( ddl_nullptr == id->m_buffer ) {
         return ddl_nullptr;
     }
 
@@ -275,22 +282,24 @@ char *OpenDDLParser::parseHeader( char *in, char *end ) {
         }
         delete id;
 
-		Name *name(ddl_nullptr);
-		in = OpenDDLParser::parseName(in, end, &name);
+		Name *name_(ddl_nullptr);
+		in = OpenDDLParser::parseName(in, end, &name_);
+		std::unique_ptr<Name> name(name_);
         if( ddl_nullptr != name && ddl_nullptr != node ) {
             const std::string nodeName( name->m_id->m_buffer );
             node->setName( nodeName );
-            delete name;
         }
 
 
-		Property *first(ddl_nullptr);
+		std::unique_ptr<Property> first;
 		in = lookForNextToken(in, end);
 		if (*in == Grammar::OpenPropertyToken[0]) {
 			in++;
-			Property *prop(ddl_nullptr), *prev(ddl_nullptr);
+			std::unique_ptr<Property> prop, prev;
 			while (*in != Grammar::ClosePropertyToken[0] && in != end) {
-				in = OpenDDLParser::parseProperty(in, end, &prop);
+				Property *prop_(ddl_nullptr);
+				in = OpenDDLParser::parseProperty(in, end, &prop_);
+				prop.reset(prop_);
 				in = lookForNextToken(in, end);
 
 				if (*in != Grammar::CommaSeparator[0] && *in != Grammar::ClosePropertyToken[0]) {
@@ -300,20 +309,20 @@ char *OpenDDLParser::parseHeader( char *in, char *end ) {
 
 				if (ddl_nullptr != prop && *in != Grammar::CommaSeparator[0]) {
 					if (ddl_nullptr == first) {
-						first = prop;
+						first = std::move(prop);
 					}
 					if (ddl_nullptr != prev) {
-						prev->m_next = prop;
+						prev->m_next = prop.release();
 					}
-					prev = prop;
+					prev = std::move(prop);
 				}
 			}
 			++in;
 		}
 
 		// set the properties
-		if (ddl_nullptr != first && ddl_nullptr != node) {
-			node->setProperties(first);
+		if (first && ddl_nullptr != node) {
+			node->setProperties(first.release());
 		}
     }
 
@@ -327,19 +336,18 @@ char *OpenDDLParser::parseStructure( char *in, char *end ) {
 
     bool error( false );
     in = lookForNextToken( in, end );
-    if( *in == '{' ) {
+    if( *in == *Grammar::OpenBracketToken) {
         // loop over all children ( data and nodes )
         do {
             in = parseStructureBody( in, end, error );
             if(in == ddl_nullptr){
                 return ddl_nullptr;
             }
-        } while ( *in != '}' );
+        } while ( *in != *Grammar::CloseBracketToken);
         ++in;
     } else {
         ++in;
         logInvalidTokenError( in, std::string( Grammar::OpenBracketToken ), m_logCallback );
-        error = true;
         return ddl_nullptr;
     }
     in = lookForNextToken( in, end );
@@ -540,7 +548,11 @@ char *OpenDDLParser::parseIdentifier( char *in, char *end, Text **id ) {
     // get size of id
     size_t idLen( 0 );
     char *start( in );
-    while( !isSeparator( *in ) && !isNewLine( *in ) && ( in != end ) && *in != Grammar::OpenPropertyToken[ 0 ] && *in != Grammar::ClosePropertyToken[ 0 ] && *in != '$' ) {
+    while( !isSeparator( *in ) && 
+            !isNewLine( *in ) && ( in != end ) && 
+            *in != Grammar::OpenPropertyToken[ 0 ] &&
+            *in != Grammar::ClosePropertyToken[ 0 ] && 
+            *in != '$' ) {
         ++in;
         ++idLen;
     }
@@ -562,7 +574,7 @@ char *OpenDDLParser::parsePrimitiveDataType( char *in, char *end, Value::ValueTy
     for( unsigned int i = 0; i < Value::ddl_types_max; i++ ) {
         prim_len = strlen( Grammar::PrimitiveTypeToken[ i ] );
         if( 0 == strncmp( in, Grammar::PrimitiveTypeToken[ i ], prim_len ) ) {
-            type = ( Value::ValueType ) i;
+            type = static_cast<Value::ValueType>( i );
             break;
         }
     }
