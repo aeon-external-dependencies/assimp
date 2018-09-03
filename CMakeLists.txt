@@ -40,7 +40,7 @@ PROJECT( Assimp )
 
 if (MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4018 /wd4057 /wd4090 /wd4131")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018 /wd4057 /wd4090 /wd4100 /wd4127 /wd4131 /wd4189 /wd4267 /wd4244 /wd4245 /wd4305 /wd4315 /wd4389 /wd4456 /wd4457 /wd4458 /wd4459 /wd4505 /wd4701 /wd4702 /wd4706 /wd4714")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018 /wd4057 /wd4090 /wd4100 /wd4127 /wd4131 /wd4189 /wd4267 /wd4244 /wd4245 /wd4305 /wd4310 /wd4315 /wd4389 /wd4456 /wd4457 /wd4458 /wd4459 /wd4505 /wd4701 /wd4702 /wd4703 /wd4706 /wd4714")
 endif ()
 
 # All supported options ###############################################
